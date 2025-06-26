@@ -1,0 +1,13 @@
+{
+  "name": "auto-image-converter",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "convert-images": "./bin/index.js"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "fast-glob": "^3.3.3",
+    "sharp": "^0.34.2"
+  }
+}

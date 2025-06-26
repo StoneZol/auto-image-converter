@@ -1,0 +1,27 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+
+# Optional: Mac/Windows system files
+.DS_Store
+Thumbs.db
+
+# VS Code settings (если используешь)
+.vscode/
+
+# Logs
+logs/
+*.log
+*.tsbuildinfo
+
+# Env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
