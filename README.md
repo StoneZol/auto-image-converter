@@ -26,11 +26,13 @@ Create a `image-converter.config.mjs` file in the root of your project:
 
 ```// Default configuration example
 export default {
-dir: "public", // Directory to scan for images
-format: "webp", // Output format: 'webp' or 'avif'
-quality: 80, // Quality (0–100)
-recursive: true, // Search subdirectories
-removeOriginal: true, // Remove original files after conversion
+  dir: "public",            // Directory to scan for images
+  converted: "*.{png,jpg,jpeg}", // Glob pattern for source image files to convert
+  format: "webp",           // Output image format: 'webp' or 'avif'
+  quality: 80,              // Quality of output images (0–100)
+  recursive: true,          // Whether to search subdirectories recursively
+  removeOriginal: true,     // Delete original files after successful conversion
+  ignoreOnStart: false,     // If true, ignore existing files on watcher startup
 };
 ```
 

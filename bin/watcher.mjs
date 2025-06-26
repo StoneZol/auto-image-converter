@@ -9,35 +9,48 @@ const config = (await import(pathToFileURL(configPath).href)).default;
 
 const watchDir = config.dir || "public";
 const absWatchDir = path.resolve(process.cwd(), watchDir);
+const extensions = extractExtensions(config.converted ?? "*.{png,jpg,jpeg}");
 
-// Для chokidar лучше передать просто папку, а не glob
 const watchPath = absWatchDir;
 
 console.log(`👀 Watching for image changes on directory: ${watchPath}`);
 
+let debounceTimeout;
+
 chokidar
-  .watch(watchPath, {
-    ignored: /(^|[\/\\])\../, // игнор скрытых файлов и папок
+  .watch(absWatchDir, {
+    ignored: /(^|[\/\\])\../,
     persistent: true,
-    ignoreInitial: true,
+    ignoreInitial: config.ignoreOnStart ?? false,
     awaitWriteFinish: {
-      stabilityThreshold: 500, // ждем, пока запись в файл закончится
-      pollInterval: 100,
+      stabilityThreshold: 1500,
+      pollInterval: 500,
     },
   })
   .on("add", async (filePath) => {
-    if (/\.(png|jpe?g)$/i.test(filePath)) {
-      console.log(`➕ New image: ${filePath}`);
+    const ext = path.extname(filePath).slice(1).toLowerCase(); // без точки
+    if (!extensions.includes(ext)) return;
+    if (ext === (config.targetFormat ?? "webp").toLowerCase()) return;
+
+    console.log(`➕ New image: ${filePath}`);
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(async () => {
       try {
         await convertImages({
           dir: watchPath,
-          format: config.targetFormat || config.format || "webp",
+          converted: config.converted ?? "*.{png,jpg,jpeg}",
+          format: config.format ?? "webp",
           quality: config.quality ?? 80,
           recursive: config.recursive ?? true,
           removeOriginal: config.removeOriginal ?? false,
         });
       } catch (err) {
-        console.error("Ошибка при конвертации:", err.message);
+        console.error("Error covertation:", err.message);
       }
-    }
+    }, 1000);
   });
+
+function extractExtensions(pattern) {
+  const match = pattern.match(/\*\.\{(.+?)\}/);
+  return match ? match[1].split(",").map((s) => s.trim().toLowerCase()) : [];
+}

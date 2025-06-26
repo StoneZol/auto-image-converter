@@ -16,7 +16,8 @@ try {
 
   await convertImages({
     dir: absDir,
-    format: config.targetFormat || config.format || "webp",
+    converted: config.converted ?? "*.{png,jpg,jpeg}",
+    targetFormat: config.targetFormat ?? "webp",
     quality: config.quality ?? 80,
     recursive: config.recursive ?? true,
     removeOriginal: config.removeOriginal ?? false,

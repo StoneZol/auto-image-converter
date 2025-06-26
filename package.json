@@ -1,6 +1,6 @@
 {
   "name": "auto-image-converter",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "keywords": [
     "image",
     "converter",
@@ -12,7 +12,7 @@
     "png",
     "jpg",
     "jpeg",
-    "cli"
+    "for frontend"
   ],
   "type": "module",
   "bin": {
