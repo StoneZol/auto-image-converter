@@ -1,6 +1,6 @@
 {
   "name": "auto-image-converter",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "type": "module",
   "bin": {
     "auto-convert-images": "./bin/index.js"
