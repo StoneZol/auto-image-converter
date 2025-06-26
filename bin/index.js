@@ -5,7 +5,7 @@ import { convertImages } from "../lib/converter.js";
 import fs from "fs/promises";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CONFIG_PATH = path.resolve(process.cwd(), "image-converter.config.js");
+const CONFIG_PATH = path.resolve(process.cwd(), "image-converter.config.mjs");
 
 try {
   const configModule = await import(pathToFileURL(CONFIG_PATH).href);
