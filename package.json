@@ -1,6 +1,19 @@
 {
   "name": "auto-image-converter",
-  "version": "2.0.0",
+  "version": "2.0.1",
+  "keywords": [
+    "image",
+    "converter",
+    "webp",
+    "avif",
+    "sharp",
+    "watch",
+    "optimization",
+    "png",
+    "jpg",
+    "jpeg",
+    "cli"
+  ],
   "type": "module",
   "bin": {
     "auto-convert-images": "./bin/index.js",
