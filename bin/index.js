@@ -29,7 +29,7 @@ try {
     });
 } catch (e) {
     console.error(
-        "❌ Ошибка загрузки конфигурации:",
+        "❌ Error loading configuration:",
         e.message
     );
     process.exit(1);
