@@ -6,16 +6,16 @@ export default {
     ignoreOnStart: true,
     concurrency: 4,
     pipeline: ["convertation", "srcset"], // опционально, будет запускать процессы прописанные в конфиге, отдельной командой
-
+    //Подключаемые модули
     modules: {
         // Настройки конвертации
         convertation: {
-            enabled: true,
+            markerOriginal: true, // если true, то будет добавлен маркер original к файлу
+            markerProcessed: true, // если true, то будет добавлен маркер processed к файлу
             // null - та же папка где оригинал
             // './converted' - относительный путь (относительно оригинала)
             // 'D:/output' - абсолютный путь (создаст подпапку с именем файла)
             outputDir: null,
-
             converted: "*.{png,jpg,jpeg,tiff}",
             format: "webp",
             quality: 80,
@@ -23,13 +23,12 @@ export default {
 
         // Настройки srcset (опционально)
         srcset: {
-            enabled: false, // Включить генерацию srcset
-
+            markerSrcset: true, // если true, то будет добавлен маркер srcset к файлу
             // null - та же папка где оригинал
             // './srcset' - относительный путь (относительно оригинала)
             // 'D:/output/srcset' - абсолютный путь (создаст подпапку с именем файла)
             outputDir: null,
-
+            converted: "*.{png,jpg,jpeg,tiff}",
             // Размеры для генерации
             sizes: [
                 { width: 320, height: 240 },
