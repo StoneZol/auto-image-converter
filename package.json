@@ -3,21 +3,23 @@
     "version": "2.1.2",
     "keywords": [
         "image",
-        "converter",
-        "webp",
-        "avif",
         "sharp",
         "watch",
         "optimization",
+        "converter",
+        "webp",
+        "avif",
         "png",
         "jpg",
         "jpeg",
+        "tiff",
         "for frontend"
     ],
     "type": "module",
     "bin": {
         "auto-convert-images": "./bin/index.js",
-        "auto-convert-images-watch": "./bin/watcher.mjs"
+        "auto-convert-images-watch": "./bin/watcher.mjs",
+        "auto-convert-images-convertpipe": "./bin/convertpipe.mjs"
     },
     "dependencies": {
         "chokidar": "^4.0.3",
