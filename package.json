@@ -1,30 +1,31 @@
 {
-  "name": "auto-image-converter",
-  "version": "2.2.0",
-  "keywords": [
-    "image",
-    "sharp",
-    "watch",
-    "optimization",
-    "converter",
-    "webp",
-    "avif",
-    "png",
-    "jpg",
-    "jpeg",
-    "tiff",
-    "for frontend"
-  ],
-  "type": "module",
-  "bin": {
-    "auto-convert-images": "./bin/index.js",
-    "auto-convert-images-watch": "./bin/watcher.mjs",
-    "auto-convert-images-resize": "./bin/onetimeresizer.mjs"
-  },
-  "dependencies": {
-    "chokidar": "^4.0.3",
-    "commander": "^14.0.1",
-    "fast-glob": "^3.3.3",
-    "sharp": "^0.34.4"
-  }
+    "name": "auto-image-converter",
+    "version": "2.2.1",
+    "license": "MIT",
+    "keywords": [
+        "image",
+        "sharp",
+        "watch",
+        "optimization",
+        "converter",
+        "webp",
+        "avif",
+        "png",
+        "jpg",
+        "jpeg",
+        "tiff",
+        "for frontend"
+    ],
+    "type": "module",
+    "bin": {
+        "auto-convert-images": "./bin/index.js",
+        "auto-convert-images-watch": "./bin/watcher.mjs",
+        "auto-convert-images-resize": "./bin/onetimeresizer.mjs"
+    },
+    "dependencies": {
+        "chokidar": "^4.0.3",
+        "commander": "^14.0.1",
+        "fast-glob": "^3.3.3",
+        "sharp": "^0.34.4"
+    }
 }
