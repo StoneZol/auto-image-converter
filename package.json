@@ -1,7 +1,14 @@
 {
     "name": "auto-image-converter",
-    "version": "2.2.1",
+    "version": "2.2.2",
     "license": "MIT",
+    "description": "CLI tool for converting images using Node.js and Sharp.",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/StoneZol/auto-image-converter.git"
+    },
+    "author": "StoneZol",
+    "homepage": "https://github.com/StoneZol/auto-image-converter",
     "keywords": [
         "image",
         "sharp",

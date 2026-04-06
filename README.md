@@ -2,10 +2,6 @@
 
 Automatically convert and resize images to modern formats (WebP, AVIF, PNG, JPEG, TIFF) with real-time file watching and flexible resize options.
 
-## 🔗 GitHub repository
-
-<https://github.com/StoneZol/auto-image-converter>
-
 ## 🚀 Features
 
 🔄 **Convert images** to WebP, AVIF, PNG, JPEG, or TIFF
