@@ -32,7 +32,7 @@ try {
         process.exit(1);
     }
 
-    const pipeline = new Pipeline(config);
+    const pipeline = new Pipeline(config, "convert");
     const stats = await pipeline.run();
 
     console.log(`\n✅ Processing complete:`);

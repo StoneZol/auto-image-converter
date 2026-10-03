@@ -3,25 +3,38 @@ import chokidar from "chokidar";
 import path from "path";
 import { Pipeline } from "../lib/Pipeline.js";
 import { pathToFileURL } from "url";
+import { parseBraceGlob } from "../lib/globPattern.js";
+import { resolveProjectPath } from "../lib/FileManager.js";
 
-const configPath = path.resolve(process.cwd(), "image-converter.config.mjs");
+const configPath = path.resolve(
+    process.cwd(),
+    "image-converter.config.mjs"
+);
 const config = (await import(pathToFileURL(configPath).href)).default;
 
-const watchDir = config.dir || "public";
-const absWatchDir = path.resolve(process.cwd(), watchDir);
-const extensions = extractExtensions(
-    config.convertation?.converted ?? config.converted ?? "*.{png,jpg,jpeg}"
+const convertation = config.convertation ?? {};
+const scanDirRaw =
+    convertation.dir ?? config.dir ?? "./public";
+const absWatchDir = resolveProjectPath(scanDirRaw);
+
+const convertedRaw =
+    convertation.converted ??
+    config.converted ??
+    "*.{png,jpg,jpeg}";
+const { extensions } = parseBraceGlob(
+    convertedRaw,
+    "convertation.converted"
 );
+
 const targetFormat = (
-    config.convertation?.format ?? config.format ?? "webp"
+    convertation.format ?? config.format ?? "webp"
 ).toLowerCase();
 
-const watchPath = absWatchDir;
+console.log(
+    `👀 Watching for image changes (convert pipeline) on: ${absWatchDir}`
+);
 
-console.log(`👀 Watching for image changes on directory: ${watchPath}`);
-
-// Создаём Pipeline и запускаем воркеров в постоянном режиме
-const pipeline = new Pipeline(config);
+const pipeline = new Pipeline(config, "convert");
 pipeline.startWorkers();
 
 let debounceTimeout;
@@ -41,33 +54,29 @@ chokidar
         const ext = path.extname(filePath).slice(1).toLowerCase();
         if (!extensions.includes(ext)) return;
         if (ext === targetFormat) return;
+        if (
+            (targetFormat === "jpg" && ext === "jpeg") ||
+            (targetFormat === "jpeg" && ext === "jpg")
+        ) {
+            return;
+        }
 
         console.log(`➕ New image: ${filePath}`);
         pendingFiles.add(filePath);
 
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(async () => {
-            // Обрабатываем все накопленные файлы
             const filesToProcess = Array.from(pendingFiles);
             pendingFiles.clear();
 
             for (const file of filesToProcess) {
                 pipeline.enqueueFile(file);
             }
-            // Воркеры уже работают, просто добавляем задачи в очередь
         }, 1000);
     });
 
-// Graceful shutdown
 process.on("SIGINT", async () => {
     console.log("\n🛑 Stopping watcher...");
     await pipeline.stop();
     process.exit(0);
 });
-
-function extractExtensions(pattern) {
-    const match = pattern.match(/\*\.\{(.+?)\}/);
-    return match
-        ? match[1].split(",").map((s) => s.trim().toLowerCase())
-        : [];
-}
