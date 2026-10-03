@@ -1,3 +1,6 @@
+# Local playground fixtures (do not commit test images)
+public/
+
 # Node.js
 node_modules/
 npm-debug.log*

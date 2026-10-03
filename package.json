@@ -1,6 +1,6 @@
 {
     "name": "auto-image-converter",
-    "version": "2.2.3",
+    "version": "3.0.0",
     "license": "MIT",
     "description": "CLI tool for converting images using Node.js and Sharp.",
     "repository": {
@@ -27,7 +27,16 @@
     "bin": {
         "auto-convert-images": "./bin/index.js",
         "auto-convert-images-watch": "./bin/watcher.mjs",
-        "auto-convert-images-resize": "./bin/onetimeresizer.mjs"
+        "auto-convert-images-resize": "./bin/onetimeresizer.mjs",
+        "auto-convert-images-resize-watch": "./bin/resize-watcher.mjs"
+    },
+    "scripts": {
+        "convert": "node ./bin/index.js",
+        "watch": "node ./bin/watcher.mjs",
+        "resize": "node ./bin/onetimeresizer.mjs",
+        "resize:watch": "node ./bin/resize-watcher.mjs",
+        "test:paths": "node --test ./test/fileManager.paths.test.js",
+        "test": "node --test ./test/fileManager.paths.test.js"
     },
     "dependencies": {
         "chokidar": "^4.0.3",
