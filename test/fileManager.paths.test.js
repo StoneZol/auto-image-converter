@@ -3,23 +3,23 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import { FileManager, resolveProjectPath } from "../lib/FileManager.js";
 import {
-    parseBraceGlob,
-    globFromTargetFormat,
+    parseFormats,
+    parseFormatsOrFallback,
 } from "../lib/globPattern.js";
 
-describe("resolveProjectPath", () => {
-    it("resolves relative paths from cwd", () => {
+describe("resolveProjectPath — scan/output dir from config", () => {
+    it('./public/og from cwd → <cwd>/public/og (not relative to the image file)', () => {
         const resolved = resolveProjectPath("./public/og");
         assert.equal(resolved, path.resolve(process.cwd(), "./public/og"));
     });
 
-    it("keeps absolute paths", () => {
+    it("absolute path is kept as-is (no cwd join)", () => {
         const absolute = path.resolve("/tmp/images");
         assert.equal(resolveProjectPath(absolute), absolute);
     });
 });
 
-describe("FileManager.resolveOutputDir", () => {
+describe("FileManager outputDir — 3.0 path rules", () => {
     const source = path.join(
         process.cwd(),
         "public",
@@ -27,15 +27,16 @@ describe("FileManager.resolveOutputDir", () => {
         "heroes",
         "cat.png"
     );
+    const scanDir = path.join(process.cwd(), "public", "og");
 
-    it("null outputDir → next to source", () => {
+    it("outputDir null → write next to source (…/og/heroes)", () => {
         const fm = new FileManager(source);
         assert.equal(fm.resolveOutputDir(null), path.dirname(source));
     });
 
-    it("relative outputDir → from cwd, flat (no name subfolder)", () => {
+    it('relative "./public/converted" → <cwd>/public/converted (flat, NOT …/og/public/converted)', () => {
         const fm = new FileManager(source, {
-            scanDir: path.join(process.cwd(), "public", "og"),
+            scanDir,
             outputDirMode: "flat",
         });
         const dir = fm.resolveOutputDir("./public/converted");
@@ -43,17 +44,19 @@ describe("FileManager.resolveOutputDir", () => {
             dir,
             path.resolve(process.cwd(), "./public/converted")
         );
-        assert.ok(!dir.endsWith("cat"));
+        assert.ok(
+            !dir.endsWith(`${path.sep}cat`),
+            "must not append filename as a subfolder (2.2.x absolute bug)"
+        );
     });
 
-    it("absolute outputDir → flat, no nameWithoutExt folder", () => {
+    it("absolute outputDir → same folder, flat (no …/converted/cat/ subfolder)", () => {
         const absolute = path.resolve(process.cwd(), "public", "converted");
         const fm = new FileManager(source);
         assert.equal(fm.resolveOutputDir(absolute), absolute);
     });
 
-    it("mirror keeps relative subfolders under scanDir", () => {
-        const scanDir = path.join(process.cwd(), "public", "og");
+    it("mirror: og/heroes/cat.png → converted/heroes (keeps subfolder under scanDir)", () => {
         const fm = new FileManager(source, {
             scanDir,
             outputDirMode: "mirror",
@@ -65,9 +68,9 @@ describe("FileManager.resolveOutputDir", () => {
         );
     });
 
-    it("resolvePath builds flat file path from cwd-relative outputDir", () => {
+    it("flat resolvePath: og/heroes/cat.png + webp → <cwd>/public/converted/cat.webp", () => {
         const fm = new FileManager(source, {
-            scanDir: path.join(process.cwd(), "public", "og"),
+            scanDir,
             outputDirMode: "flat",
         });
         const out = fm.resolvePath({
@@ -81,27 +84,37 @@ describe("FileManager.resolveOutputDir", () => {
     });
 });
 
-describe("globPattern", () => {
-    it("accepts *.{png} and *.{png,jpg}", () => {
-        assert.deepEqual(parseBraceGlob("*.{png}").extensions, ["png"]);
-        assert.deepEqual(parseBraceGlob("*.{png,jpg,jpeg}").extensions, [
+describe("parseFormats — converted / targetFormat (comma list)", () => {
+    it('accepts "png" and "png,jpg,jpeg"', () => {
+        assert.deepEqual(parseFormats("png").extensions, ["png"]);
+        assert.equal(parseFormats("png").fastGlob, "*.png");
+        assert.deepEqual(parseFormats("png,jpg,jpeg").extensions, [
             "png",
             "jpg",
             "jpeg",
         ]);
+        assert.equal(parseFormats("png,jpg,jpeg").fastGlob, "*.{png,jpg,jpeg}");
     });
 
-    it("rejects *.png", () => {
-        assert.throws(() => parseBraceGlob("*.png"), /must use \*\.\{\.\.\.\}/);
+    it('legacy "*.{png,jpg}" still works', () => {
+        assert.deepEqual(parseFormats("*.{png,jpg}").extensions, [
+            "png",
+            "jpg",
+        ]);
     });
 
-    it("builds glob from targetFormat", () => {
-        const single = globFromTargetFormat("webp", "avif");
-        assert.equal(single.pattern, "*.{webp}");
-        assert.equal(single.fastGlob, "*.webp");
-        assert.equal(globFromTargetFormat(null, "webp").fastGlob, "*.webp");
+    it('rejects invalid "*.png" glob (use "png" or "*.{png}")', () => {
+        assert.throws(() => parseFormats("*.png"), /must be formats/);
+    });
+
+    it('targetFormat null → fallback convertation.format "webp" → *.webp', () => {
         assert.equal(
-            globFromTargetFormat("png,jpg", "webp").fastGlob,
+            parseFormatsOrFallback(null, "webp", "resize.targetFormat")
+                .fastGlob,
+            "*.webp"
+        );
+        assert.equal(
+            parseFormatsOrFallback("png,jpg", "webp").fastGlob,
             "*.{png,jpg}"
         );
     });

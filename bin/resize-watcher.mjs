@@ -3,7 +3,7 @@ import chokidar from "chokidar";
 import path from "path";
 import { Pipeline } from "../lib/Pipeline.js";
 import { pathToFileURL } from "url";
-import { globFromTargetFormat } from "../lib/globPattern.js";
+import { parseFormatsOrFallback } from "../lib/globPattern.js";
 import { resolveProjectPath } from "../lib/FileManager.js";
 
 const configPath = path.resolve(
@@ -31,9 +31,10 @@ const formatFallback = (
     config.format ??
     "webp"
 ).toLowerCase();
-const { extensions } = globFromTargetFormat(
+const { extensions } = parseFormatsOrFallback(
     resize.targetFormat,
-    formatFallback
+    formatFallback,
+    "resize.targetFormat"
 );
 
 const outputDirRaw =

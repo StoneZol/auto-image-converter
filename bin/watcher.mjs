@@ -3,7 +3,7 @@ import chokidar from "chokidar";
 import path from "path";
 import { Pipeline } from "../lib/Pipeline.js";
 import { pathToFileURL } from "url";
-import { parseBraceGlob } from "../lib/globPattern.js";
+import { parseFormats } from "../lib/globPattern.js";
 import { resolveProjectPath } from "../lib/FileManager.js";
 
 const configPath = path.resolve(
@@ -20,8 +20,8 @@ const absWatchDir = resolveProjectPath(scanDirRaw);
 const convertedRaw =
     convertation.converted ??
     config.converted ??
-    "*.{png,jpg,jpeg}";
-const { extensions } = parseBraceGlob(
+    "png,jpg,jpeg";
+const { extensions } = parseFormats(
     convertedRaw,
     "convertation.converted"
 );

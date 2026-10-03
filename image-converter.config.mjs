@@ -12,16 +12,15 @@ export default {
     // --- convert + watch (auto-convert-images / auto-convert-images-watch) ---
     convertation: {
         // Folder to scan for sources. Relative = from cwd, or use an absolute path.
-        dir: "./public/og",
+        dir: "./public/original",
 
         // After a successful convert: delete the source file from convertation.dir?
         // Does not delete outputs in convertation.outputDir or resize.outputDir.
         removeOriginal: true,
 
-        // Input glob. ONLY *.{...} syntax.
-        // One type: *.{png}   Several: *.{png,jpg,jpeg,tiff}
-        // Invalid: *.png or png — config error.
-        converted: "*.{png,jpg,jpeg,tiff}",
+        // Source formats (comma-separated). One: "png"  Several: "png,jpg,jpeg,tiff"
+        // Legacy "*.{png,jpg}" still accepted.
+        converted: "png,jpg,jpeg,tiff",
 
         // Output codec for convert/watch: webp | avif | png | jpg | jpeg | tiff
         format: "webp",
@@ -47,7 +46,7 @@ export default {
         // true: ALSO save that same resized blob in the SOURCE format → resize.outputDir
         // (e.g. png→png). Convert to `format` still runs.
         // Requires needResize: true and resize.outputDir set.
-        needResizeOriginal: false,
+        needResizeOriginal: true,
     },
 
     // --- resize geometry + resize CLI / resize:watch (no format change) ---
@@ -78,11 +77,9 @@ export default {
         withoutEnlargement: true,
 
         // Which file format(s) to resize (NOT a convert target — extension stays the same).
-        // "webp" → find *.{webp}, write .webp again (new dimensions only).
-        // Several: "png,jpg" → *.{png,jpg}.
+        // Same style as convertation.converted: "webp" or "png,jpg,webp".
         // null → use convertation.format (handy after convert to webp).
-        // Resize-only png: dir "./public/og", targetFormat: "png".
-        targetFormat: "webp",
+        targetFormat: "png,jpg,jpeg,tiff,webp,avif",
 
         // Where to write resize CLI results and needResizeOriginal siblings.
         // null + removeOriginal true → overwrite source;

@@ -1,19 +1,28 @@
-# Auto Image Converter
+# 🖼️ Auto Image Converter
 
-Convert and resize images to modern formats (WebP, AVIF, PNG, JPEG, TIFF) with optional watch mode.
+Automatically convert and resize images to modern formats (WebP, AVIF, PNG, JPEG, TIFF) with real-time file watching and flexible resize options.
 
-**v3.0.0** — breaking path/config semantics (see below).
+**v3.0.0** — breaking config/path fixes vs 2.2.x. See [Breaking changes](#-breaking-changes-in-30) and [CHANGELOG.md](./CHANGELOG.md).
 
-## Features
+## 🚀 Features
 
-- Convert to WebP, AVIF, PNG, JPEG, or TIFF
-- Resize in the convert pipeline (`needResize`) or via a separate resize CLI (same format, dimensions only)
-- Per-command `dir` / `removeOriginal` / `outputDir`
-- Watch mode = convert pipeline as an observer (not a resize watcher)
-- Parallel workers via `concurrency`
-- Local playground under `public/` (gitignored)
+🔄 **Convert images** to WebP, AVIF, PNG, JPEG, or TIFF
 
-## Installation
+📐 **Resize** inside convert (`needResize`) and/or via a separate resize command (same format, dimensions only)
+
+💾 **`needResizeOriginal`** — also save the resized file in the source format
+
+📁 **Per-command paths** — separate `dir` / `removeOriginal` / `outputDir` for convert and resize
+
+👀 **Watch convert** + **watch resize** — process new files as they arrive (FTP/drop folders friendly)
+
+⚡ **Parallel workers** via `concurrency`
+
+🗂️ **`flat` / `mirror`** output layout
+
+⚙️ **Easy configuration** via `image-converter.config.mjs` (fully commented sample in the repo)
+
+## 📦 Installation
 
 ```bash
 npm install auto-image-converter --save-dev
@@ -26,105 +35,112 @@ npm install
 npm run convert
 npm run watch
 npm run resize
-npm test
+npm run resize:watch
 ```
 
-## Configuration
+Or use locally via `npm link`:
 
-Create `image-converter.config.mjs` in the project root. The sample in this repo is fully commented in English.
+```bash
+cd auto-image-converter
+npm link
+cd ../your-project
+npm link auto-image-converter
+```
 
-### Path rules (breaking in 3.0)
+## ⚙️ Configuration
 
-| Value | Meaning |
-| --- | --- |
-| Relative (`./public/og`) | Resolved from **cwd** (project root when you `npm run …`) |
-| Absolute | Used as-is |
-| `outputDir: null` | Write next to the source file |
+Create `image-converter.config.mjs` in the **project root** (same folder you run npm scripts from — cwd).  
+Copy the commented sample from this repo and adjust paths.
 
-**Do not** use `/public` on Windows if you mean the project folder — that is an absolute path from the drive root. Prefer `./public/...`.
+### Who owns what
 
-`outputDirMode`:
-
-- `flat` (default) — `outputDir/name.ext`
-- `mirror` — keep subfolders relative to that command’s `dir`
-
-### Convert / watch vs resize CLI
-
-| | convert / watch | resize CLI |
+| | convert / `watch` | resize / `resize:watch` |
 | --- | --- | --- |
 | Scan folder | `convertation.dir` | `resize.dir` |
 | Delete source | `convertation.removeOriginal` | `resize.removeOriginal` |
-| Output | `convertation.outputDir` | `resize.outputDir` |
-| Format change | yes (`convertation.format`) | **no** (same extension) |
-| Which files | `convertation.converted` (`*.{...}` only) | `resize.targetFormat` (`"webp"` → `*.{webp}`) |
+| Output folder | `convertation.outputDir` | `resize.outputDir` |
+| Format change | yes — `convertation.format` | **no** — same extension |
+| Which files | `convertation.converted` | `resize.targetFormat` |
 
-**Watch convert** (`npm run watch`) = convert pipeline on `convertation.dir`.  
-**Watch resize** (`npm run resize:watch`) = resize pipeline on `resize.dir` + `targetFormat` (same format, dimensions only). Ignores files under `resize.outputDir` and `*-1920w` / `*-1920x1080` suffix outputs to avoid loops.
+Top-level `dir` / `removeOriginal` / `needResize` still work with a deprecation warning; prefer per-section fields.
 
-### Input glob
+### Paths
 
-Only `*.{png}` or `*.{png,jpg,jpeg}` in config. Other forms (`*.png`, `png`) are a config error.  
-Internally a single extension is scanned as `*.png` (fast-glob does not match `*.{png}` reliably).
+| Value | Meaning |
+| --- | --- |
+| Relative (`./public/original`) | From **cwd** |
+| Absolute | Used as-is |
+| `outputDir: null` | Next to the source file |
 
-### `needResize` / `needResizeOriginal`
+On Windows prefer `./public/...`. A path like `/public` is absolute from the drive root.
 
-Both live under `convertation`:
+**`outputDirMode`**
 
-1. `needResize: true` — resize the blob once, then encode to `format` → `convertation.outputDir`
-2. `needResizeOriginal: true` — also write that resized blob in the **source** format → `resize.outputDir` (requires `needResize` and `resize.outputDir`)
+- `flat` (default) — `original/tests/cat.png` → `converted/cat.webp`
+- `mirror` — keep subfolders from `dir` → `converted/tests/cat.webp`
 
-### Typical workflows
+### Input formats
 
-**Convert with optional resize in one pass**
+Same style everywhere — comma-separated extensions (no `*.{…}` required):
 
-```text
-convertation.dir = ./public/og
-convertation.outputDir = ./public/converted
-convertation.needResize = true
+```js
+converted: "png"
+converted: "png,jpg,jpeg,tiff"
+
+targetFormat: "webp"
+targetFormat: "png,jpg,webp"
+targetFormat: null // → convertation.format
 ```
 
-**Convert first, resize converted files later**
+Legacy `*.{png,jpg}` still works if you already have it in a config.
 
-```text
-# convert
-convertation.dir → convertation.outputDir
+### Resize in the convert pipeline
 
-# then resize CLI
-resize.dir = ./public/converted
-resize.targetFormat = "webp"
-resize.outputDir = ./public/resized
-```
+1. **`needResize: true`** — resize once in memory, then encode to `format` → `convertation.outputDir`
+2. **`needResizeOriginal: true`** — also write resized **source-format** file → `resize.outputDir`  
+   (requires `needResize` + `resize.outputDir`)
 
-**Resize only (no convert)**
+⚠️ Don’t also run `resize:watch` on the same files if convert already resized them — you’ll resize twice.
 
-```text
-resize.dir = ./public/og
-resize.targetFormat = "png"
-npm run resize
-```
+### Resize options
 
-## Usage
+- **By width only**: `width: 1920, height: null`
+- **By height only**: `width: null, height: 1080`
+- **To a box**: `width: 1920, height: 1080` (uses `fit`)
+
+**`withoutEnlargement: true`** — never upscale; only shrink larger images.
+
+### Fit modes
+
+- `cover` — fill size, crop excess (default)
+- `contain` — fit inside, may pad
+- `fill` — stretch
+- `inside` — fit inside, no enlarge
+- `outside` — cover size, may enlarge
+
+## 🛠️ Usage
+
+### Commands
 
 ```bash
-# One-shot convert
+# One-time convert (+ optional needResize in the same pass)
 npx auto-convert-images
-# or in this repo:
 npm run convert
 
-# Watch (convert pipeline)
+# Watch convert — convertation.dir
 npx auto-convert-images-watch
 npm run watch
 
-# One-shot resize (same format)
+# One-time resize (same format, dimensions only)
 npx auto-convert-images-resize
 npm run resize
 
-# Watch (resize pipeline)
+# Watch resize — resize.dir
 npx auto-convert-images-resize-watch
 npm run resize:watch
 ```
 
-### Package.json scripts (consumer project)
+### Package.json scripts
 
 ```json
 {
@@ -137,11 +153,7 @@ npm run resize:watch
 }
 ```
 
-### Local playground
-
-This repository uses gitignored `public/og`, `public/converted`, `public/resized`. Drop test images into `public/og` and run `npm run convert` without linking the package into another app.
-
-### Next.js
+### With Next.js
 
 ```bash
 npm install concurrently --save-dev
@@ -150,22 +162,80 @@ npm install concurrently --save-dev
 ```json
 {
   "scripts": {
-    "dev": "concurrently \"npm run watch\" \"npm run resize:watch\" \"next dev\""
+    "dev": "concurrently \"npm run watch\" \"next dev\""
   }
 }
 ```
 
-Use only `watch` if you resize inside convert (`needResize`). Use both when convert writes to `convertation.outputDir` and resize watch picks up from `resize.dir`.
+Add `resize:watch` only if you use a separate resize stage.
 
-## Breaking changes in 3.0
+## 📋 Use cases
 
-- `outputDir` relative paths are from **cwd**, not from the source file folder
-- Absolute `outputDir` is **flat** (no per-file name subfolder)
-- Prefer `convertation.dir` / `resize.dir` and per-section `removeOriginal` (top-level still works with a deprecation warning)
-- `needResize` belongs under `convertation`
-- `convertation.converted` must be `*.{...}`
-- Resize CLI uses `targetFormat` and does not change image codec
+### 1. One pass — resize + convert
 
-## License
+```text
+convertation.dir = ./public/original
+convertation.outputDir = ./public/converted
+convertation.needResize = true
+npm run convert   # or npm run watch
+```
 
-MIT
+### 2. Watch drop folder / FTP
+
+```text
+FTP → convertation.dir
+npm run watch
+```
+
+Watch waits for a stable file size before processing.
+
+### 3. Convert first, resize later
+
+```text
+# convert with needResize: false
+convertation.dir → convertation.outputDir
+
+# then
+resize.dir = ./public/converted
+resize.targetFormat = "webp"
+resize.outputDir = ./public/resized
+npm run resize   # or npm run resize:watch
+```
+
+- `resize.removeOriginal: false` + `outputDir: null` → size suffix (`image-1920w.webp`)
+- `resize.removeOriginal: true` + `outputDir: null` → overwrite source
+
+### 4. Resize only (no convert)
+
+```text
+resize.dir = ./public/original
+resize.targetFormat = "png,jpg"
+npm run resize
+```
+
+## 🏗️ Architecture
+
+- **Pipeline** — queue + workers (convert or resize mode)
+- **ResizeImages** / **ConvertImages** — Sharp wrappers
+- **FileManager** — path resolution (`flat` / `mirror`, cwd-relative)
+- **globPattern** — strict `*.{…}` parsing
+
+## 💥 Breaking changes in 3.0
+
+- Relative `outputDir` / `dir` resolve from **cwd** (2.2.x relative `outputDir` was from the source file folder)
+- Absolute `outputDir` is **flat** (2.2.x added a per-file name subfolder)
+- Prefer `convertation.dir` / `resize.dir` and per-section `removeOriginal`
+- `needResize` / `needResizeOriginal` under `convertation`
+- Prefer `converted` / `targetFormat` as `"png,jpg"` (legacy `*.{…}` still ok)
+- Resize CLI uses `resize.dir` + `targetFormat` (still no format conversion — same as 2.2.x intent)
+- New: `auto-convert-images-resize-watch`
+
+Full details: [CHANGELOG.md](./CHANGELOG.md).
+
+## 🐛 Bug reports
+
+Report issues on [GitHub Issues](https://github.com/StoneZol/auto-image-converter/issues). Include description, steps, expected/actual behavior, config, Node.js version, and OS.
+
+## 📄 License
+
+MIT — free to use, modify, and distribute with proper attribution.
