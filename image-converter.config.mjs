@@ -50,11 +50,11 @@ export default {
         needResizeOriginal: false,
     },
 
-    // --- resize geometry + resize CLI only (no format change) ---
+    // --- resize geometry + resize CLI / resize:watch (no format change) ---
     resize: {
-        // Folder to scan for the resize CLI.
+        // Folder to scan for resize / resize:watch.
         // Resize-only (no convert): set to ./public/og (or any image folder).
-        // After convert: usually ./public/converted.
+        // After convert: usually ./public/converted (pair with convert watch → this folder).
         dir: "./public/converted",
 
         // After a successful resize CLI run: delete/overwrite the source in resize.dir?

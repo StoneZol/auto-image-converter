@@ -58,7 +58,8 @@ Create `image-converter.config.mjs` in the project root. The sample in this repo
 | Format change | yes (`convertation.format`) | **no** (same extension) |
 | Which files | `convertation.converted` (`*.{...}` only) | `resize.targetFormat` (`"webp"` → `*.{webp}`) |
 
-**Watch** (`npm run watch`) uses the **same pipeline as convert**, watching `convertation.dir`. It does not use `resize.dir` / `targetFormat`. A dedicated resize watcher may be added later.
+**Watch convert** (`npm run watch`) = convert pipeline on `convertation.dir`.  
+**Watch resize** (`npm run resize:watch`) = resize pipeline on `resize.dir` + `targetFormat` (same format, dimensions only). Ignores files under `resize.outputDir` and `*-1920w` / `*-1920x1080` suffix outputs to avoid loops.
 
 ### Input glob
 
@@ -117,6 +118,10 @@ npm run watch
 # One-shot resize (same format)
 npx auto-convert-images-resize
 npm run resize
+
+# Watch (resize pipeline)
+npx auto-convert-images-resize-watch
+npm run resize:watch
 ```
 
 ### Package.json scripts (consumer project)
@@ -126,7 +131,8 @@ npm run resize
   "scripts": {
     "convert": "auto-convert-images",
     "watch": "auto-convert-images-watch",
-    "resize": "auto-convert-images-resize"
+    "resize": "auto-convert-images-resize",
+    "resize:watch": "auto-convert-images-resize-watch"
   }
 }
 ```
@@ -144,10 +150,12 @@ npm install concurrently --save-dev
 ```json
 {
   "scripts": {
-    "dev": "concurrently \"npm run watch\" \"next dev\""
+    "dev": "concurrently \"npm run watch\" \"npm run resize:watch\" \"next dev\""
   }
 }
 ```
+
+Use only `watch` if you resize inside convert (`needResize`). Use both when convert writes to `convertation.outputDir` and resize watch picks up from `resize.dir`.
 
 ## Breaking changes in 3.0
 
