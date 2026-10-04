@@ -1,6 +1,6 @@
 {
     "name": "auto-image-converter",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "license": "MIT",
     "description": "CLI tool for converting images using Node.js and Sharp.",
     "repository": {
